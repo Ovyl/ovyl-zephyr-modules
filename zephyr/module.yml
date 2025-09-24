@@ -1,0 +1,4 @@
+name: ovyl-zephyr-modules
+build:
+  cmake: .
+  kconfig: zephyr/Kconfig

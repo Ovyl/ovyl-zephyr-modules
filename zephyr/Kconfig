@@ -1,0 +1,5 @@
+menu "OVYL Modules"
+
+rsource "../iwdog/Kconfig"
+
+endmenu
