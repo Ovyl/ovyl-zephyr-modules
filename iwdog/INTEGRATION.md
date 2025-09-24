@@ -14,19 +14,20 @@ Add the OVYL modules repository the `west.yml`:
 manifest:
   remotes:
     - name: ovyl
-      url-base: https://github.com/Ovyl/ovyl-zephyr-modules
+      url-base: https://github.com/Ovyl
 
   projects:
     - name: ovyl-zephyr-modules
       remote: ovyl
       repo-path: ovyl-zephyr-modules
-      revision: main
-      path: modules/ovyl
+      revision: main            # or a branch/tag/SHA
+      path: modules/ovyl        # folder in your workspace
+
 ```
 
 After updating `west.yml`, run:
 ```bash
-west update ovyl-modules
+west update ovyl-zephyr-modules
 ```
 
 ### 2. Device Tree Configuration
