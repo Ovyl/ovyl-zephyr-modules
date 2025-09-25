@@ -16,3 +16,11 @@ config CONFIGS_APP_DEF_PATH
       Path to the application’s CFG(...) file.
       Example:
         CONFIGS_APP_DEF_PATH="\"${CMAKE_CURRENT_SOURCE_DIR}/app/app_configs.def\""
+
+# Pattern for per-module logging config
+module = OVYL_CONFIG
+module-str = OVYL_CONFIG
+source "subsys/logging/Kconfig.template.log_config"
+
+
+endmenu
