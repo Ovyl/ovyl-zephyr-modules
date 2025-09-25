@@ -1,4 +1,7 @@
-menu "OVYL Internal Watchdog"
+# Copyright (c) 2025 Ovyl
+# SPDX-License-Identifier: Apache-2.0
+
+menu "Ovyl Internal Watchdog"
 
 config OVYL_IWDOG
     bool "Internal Watchdog Support"
