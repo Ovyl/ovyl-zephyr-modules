@@ -1,0 +1,18 @@
+# Copyright (c) 2025 Ovyl
+# SPDX-License-Identifier: Apache-2.0
+
+menu "Ovyl Config Module"
+
+config OVYL_CONFIG
+    bool "Config Module"
+    default n
+    select NVS=y
+    select FLASH=y
+    select FLASH_MAP=y
+
+config CONFIGS_APP_DEF_PATH
+    string "Path to app configs.def"
+    help
+      Path to the application’s CFG(...) file.
+      Example:
+        CONFIGS_APP_DEF_PATH="\"${CMAKE_CURRENT_SOURCE_DIR}/app/app_configs.def\""
