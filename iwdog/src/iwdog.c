@@ -9,7 +9,7 @@
  * @brief Ovyl internal watchdog timer management implementation
  */
 
-#include "ovyl_iwdog.h"
+#include <ovyl/iwdog.h>
 
 #include <errno.h>
 #include <zephyr/drivers/watchdog.h>
