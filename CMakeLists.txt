@@ -9,6 +9,11 @@ if(CONFIG_OVYL_IWDOG)
   add_subdirectory(iwdog)
 endif()
 
+# Config module
+if(CONFIG_OVYL_CONFIG)
+  add_subdirectory(config)
+endif()
+
 # BT module
 if(CONFIG_OVYL_BT)
   add_subdirectory(bt)
