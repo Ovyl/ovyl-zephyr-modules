@@ -6,9 +6,9 @@ menu "Ovyl Config Module"
 config OVYL_CONFIG
     bool "Config Module"
     default n
-    select NVS=y
-    select FLASH=y
-    select FLASH_MAP=y
+    select NVS
+    select FLASH
+    select FLASH_MAP
 
 config CONFIGS_APP_DEF_PATH
     string "Path to app configs.def"
