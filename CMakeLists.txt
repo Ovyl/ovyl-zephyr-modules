@@ -8,3 +8,8 @@ zephyr_library()
 if(CONFIG_OVYL_IWDOG)
   add_subdirectory(iwdog)
 endif()
+
+# Config module
+if(CONFIG_OVYL_CONFIG)
+  add_subdirectory(config)
+endif()
