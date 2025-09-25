@@ -5,7 +5,7 @@
  */
 
 /**
- * @file ovyl_iwdog.c
+ * @file iwdog.c
  * @brief Ovyl internal watchdog timer management implementation
  */
 

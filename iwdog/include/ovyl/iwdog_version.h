@@ -5,7 +5,7 @@
  */
 
 /**
- * @file ovyl_iwdog_version.h
+ * @file iwdog_version.h
  * @brief Ovyl Internal watchdog version definitions
  */
 
