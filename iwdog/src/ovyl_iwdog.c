@@ -1,10 +1,12 @@
 /*
- * Copyright (C) Ovyl
+ * Copyright (c) 2025 Ovyl
+ *
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
  * @file ovyl_iwdog.c
- * @brief OVYL internal watchdog timer management implementation
+ * @brief Ovyl internal watchdog timer management implementation
  */
 
 #include "ovyl_iwdog.h"

@@ -1,4 +1,7 @@
-# OVYL IWDOG Module Integration Guide
+# Copyright (c) 2025 Ovyl
+# SPDX-License-Identifier: Apache-2.0
+
+# Ovyl IWDOG Module Integration Guide
 
 ## Overview
 
@@ -8,7 +11,7 @@ The OVYL Internal Watchdog (IWDOG) module provides a high-level abstraction for 
 
 ### 1. Add Module to West Manifest
 
-Add the OVYL modules repository the `west.yml`:
+Add the Ovyl modules repository the `west.yml`:
 
 ```yaml
 manifest:

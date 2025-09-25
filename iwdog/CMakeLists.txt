@@ -1,4 +1,7 @@
-# OVYL IWDOG Module
+# Copyright (c) 2025 Ovyl
+# SPDX-License-Identifier: Apache-2.0
+
+# Ovyl IWDOG Module
 
 # Only compile if the feature is enabled
 zephyr_library_sources_ifdef(CONFIG_OVYL_IWDOG src/ovyl_iwdog.c)
