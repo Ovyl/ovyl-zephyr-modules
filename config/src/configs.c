@@ -11,7 +11,6 @@
 
 #include <ovyl/configs.h>
 
-#include <ovyl/config_types.h>
 #include <zephyr/logging/log.h>
 
 /*****************************************************************************
