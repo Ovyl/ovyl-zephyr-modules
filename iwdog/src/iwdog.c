@@ -21,7 +21,7 @@
 #include <zephyr/zbus/zbus.h>
 #endif
 
-#include "ovyl_iwdog_version.h"
+#include <ovyl/iwdog_version.h>
 /****************************************************************
  * Private Defines
  ****************************************************************/
