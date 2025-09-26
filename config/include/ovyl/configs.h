@@ -13,6 +13,7 @@
 #define OVYL_CONFIGS_H
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #include <ovyl/config_keys.h>
 

@@ -10,6 +10,14 @@ config OVYL_CONFIG
     select FLASH
     select FLASH_MAP
 
+config OVYL_CONFIG_OPT_FLASH_AREA
+    string "NVS flash area partition name"
+    default nvs_storage
+    help
+      Name of the flash partition to use for NVS storage.
+      This must match a partition defined in pm_static.yml.
+      Default is nvs_storage.
+
 config OVYL_CONFIG_APP_DEF_PATH
     string "Path to app configs.def"
     help
