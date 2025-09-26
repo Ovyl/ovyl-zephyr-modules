@@ -214,7 +214,7 @@ static int cmd_config_list(const struct shell *sh, size_t argc, char **argv) {
             }
 
         } else if (entry->value_size_bytes == sizeof(uint64_t)) {
-            uint32_t value;
+            uint64_t value;
             if (ovyl_config_mgr_get_value(i, &value, sizeof(value))) {
                 shell_print(sh, "  %s: %llu", key_name, value);
             } else {
