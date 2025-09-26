@@ -37,6 +37,7 @@ typedef struct config_entry_t {
     const char *human_readable_key;
     size_t value_size_bytes;
     void *default_value;
+    bool resettable;
 } config_entry_t;
 
 /*****************************************************************************

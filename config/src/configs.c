@@ -25,7 +25,7 @@
  * @Brief Define default values for each of the keys
  */
 #define CFG_DEFINE(key, type, default_val) static type key##_def_val = default_val;
-#include "configs.def"
+#include <ovyl/configs.def>
 #undef CFG_DEFINE
 
 #define CFG_DEFINE(key, type, default_val)                                                         \
@@ -34,7 +34,7 @@
              .human_readable_key = #key},
 
 static config_entry_t prv_config_entries[] = {
-#include "configs.def"
+#include <ovyl/configs.def>
 #undef CFG_DEFINE
 };
 
