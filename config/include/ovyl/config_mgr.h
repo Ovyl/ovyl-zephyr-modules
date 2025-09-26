@@ -30,13 +30,13 @@ extern "C" {
  *****************************************************************************/
 
 /*****************************************************************************
- * Function Prototypes
+ * Public Functions
  *****************************************************************************/
 
 /**
  * @brief Initialize configuration manager
  */
-void config_mgr_init(void);
+void ovyl_config_mgr_init(void);
 
 /**
  * @brief Get value of configuration for key
@@ -46,7 +46,7 @@ void config_mgr_init(void);
  * @param size Size of buffer
  * @return Returns true on success
  */
-bool config_mgr_get_value(config_key_t key, void *dst, size_t size);
+bool ovyl_config_mgr_get_value(config_key_t key, void *dst, size_t size);
 
 /**
  * @brief Set value for given key
@@ -56,7 +56,23 @@ bool config_mgr_get_value(config_key_t key, void *dst, size_t size);
  * @param size Size of source
  * @return Returns true on success
  */
-bool config_mgr_set_value(config_key_t key, const void *src, size_t size);
+bool ovyl_config_mgr_set_value(config_key_t key, const void *src, size_t size);
+
+/**
+ * @brief Reset all NVS entries to defaults
+ *
+ * This will delete ALL configuration values from NVS storage,
+ * causing them to use default values on next read.
+ */
+void ovyl_config_mgr_reset_nvs(void);
+
+/**
+ * @brief Reset resettable configuration entries to defaults
+ *
+ * This will only reset configuration entries that have the
+ * resettable flag set to true in their definition.
+ */
+void ovyl_config_mgr_reset_configs(void);
 
 #ifdef __cplusplus
 }
