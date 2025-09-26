@@ -42,7 +42,7 @@ typedef struct config_entry_t {
 } config_entry_t;
 
 /*****************************************************************************
- * Function Prototypes
+ * Public Functions
  *****************************************************************************/
 
 /**
@@ -51,7 +51,7 @@ typedef struct config_entry_t {
  * @param key Key for entry
  * @return Returns pointer to entry or NULL if key is not valid
  */
-config_entry_t *configs_get_entry(config_key_t key);
+config_entry_t *ovyl_configs_get_entry(config_key_t key);
 
 /**
  * @brief Get human readable version of key
@@ -60,7 +60,7 @@ config_entry_t *configs_get_entry(config_key_t key);
  * @return Will return human readable key if key exists or "Unknown Key" if not
  * valid.
  */
-const char *config_key_as_str(config_key_t key);
+const char *ovyl_config_key_as_str(config_key_t key);
 
 #ifdef __cplusplus
 }

@@ -36,11 +36,8 @@ LOG_MODULE_REGISTER(ovyl_cfg_mgr, CONFIG_OVYL_CFG_MGR_LOG_LEVEL);
  * Variables
  *****************************************************************************/
 
-/**
- * @brief Private instance
- */
 static struct {
-    struct nvs_fs fs;
+    struct nvs_fs fs; // NVS filesystem instance for config storage
 } prv_inst;
 
 /*****************************************************************************
@@ -48,10 +45,10 @@ static struct {
  *****************************************************************************/
 
 /*****************************************************************************
- * Public Function Definitions
+ * Public Functions
  *****************************************************************************/
 
-void config_mgr_init(void) {
+void ovyl_config_mgr_init(void) {
     const struct flash_area *fa;
     int rc = flash_area_open(FLASH_AREA_ID(CFG_OPT_FLASH_AREA), &fa);
     if (rc < 0) {
@@ -73,12 +70,12 @@ void config_mgr_init(void) {
     }
 }
 
-bool config_mgr_get_value(config_key_t key, void *dst, size_t size) {
+bool ovyl_config_mgr_get_value(config_key_t key, void *dst, size_t size) {
     if (dst == NULL) {
         return false;
     }
 
-    config_entry_t *entry = configs_get_entry(key);
+    config_entry_t *entry = ovyl_configs_get_entry(key);
 
     if (entry == NULL) {
         return false;
@@ -107,12 +104,12 @@ bool config_mgr_get_value(config_key_t key, void *dst, size_t size) {
     return true;
 }
 
-bool config_mgr_set_value(config_key_t key, const void *src, size_t size) {
+bool ovyl_config_mgr_set_value(config_key_t key, const void *src, size_t size) {
     if (src == NULL) {
         return false;
     }
 
-    config_entry_t *entry = configs_get_entry(key);
+    config_entry_t *entry = ovyl_configs_get_entry(key);
 
     if (entry == NULL) {
         return false;
@@ -134,23 +131,19 @@ bool config_mgr_set_value(config_key_t key, const void *src, size_t size) {
     return true;
 }
 
-/*****************************************************************************
- * Private Function Definitions
- *****************************************************************************/
-
-static void prv_reset_nvs(void) {
+void ovyl_config_mgr_reset_nvs(void) {
     for (size_t i = 0; i < CFG_NUM_KEYS; i++) {
         int ret = nvs_delete(&prv_inst.fs, i);
 
         if (ret != 0) {
-            LOG_ERR("Failed to reset %s to default: %d", config_key_as_str(i), ret);
+            LOG_ERR("Failed to reset %s to default: %d", ovyl_config_key_as_str(i), ret);
         }
     }
 }
 
-static void prv_reset_config(void) {
+void ovyl_config_mgr_reset_configs(void) {
     for (size_t i = 0; i < CFG_NUM_KEYS; i++) {
-        config_entry_t *entry = configs_get_entry(i);
+        config_entry_t *entry = ovyl_configs_get_entry(i);
         if (entry == NULL) {
             continue;
         }
@@ -160,13 +153,17 @@ static void prv_reset_config(void) {
             int ret = nvs_delete(&prv_inst.fs, i);
 
             if (ret != 0) {
-                LOG_ERR("Failed to reset %s to default: %d", config_key_as_str(i), ret);
+                LOG_ERR("Failed to reset %s to default: %d", ovyl_config_key_as_str(i), ret);
             } else {
-                LOG_DBG("Reset %s to default", config_key_as_str(i));
+                LOG_DBG("Reset %s to default", ovyl_config_key_as_str(i));
             }
         }
     }
 }
+
+/*****************************************************************************
+ * Private Functions
+ *****************************************************************************/
 
 /*****************************************************************************
  * Shell Commands
@@ -187,30 +184,30 @@ static int cmd_config_list(const struct shell *sh, size_t argc, char **argv) {
     shell_print(sh, "====================");
 
     for (size_t i = 0; i < CFG_NUM_KEYS; i++) {
-        config_entry_t *entry = configs_get_entry(i);
+        config_entry_t *entry = ovyl_configs_get_entry(i);
         if (entry == NULL) {
             continue;
         }
 
-        const char *key_name = config_key_as_str(i);
+        const char *key_name = ovyl_config_key_as_str(i);
 
         if (entry->value_size_bytes == sizeof(uint8_t)) {
             uint8_t value;
-            if (config_mgr_get_value(i, &value, sizeof(value))) {
+            if (ovyl_config_mgr_get_value(i, &value, sizeof(value))) {
                 shell_print(sh, "  %s: %u", key_name, value);
             } else {
                 shell_print(sh, "  %s: <error reading>", key_name);
             }
         } else if (entry->value_size_bytes == sizeof(uint16_t)) {
             uint16_t value;
-            if (config_mgr_get_value(i, &value, sizeof(value))) {
+            if (ovyl_config_mgr_get_value(i, &value, sizeof(value))) {
                 shell_print(sh, "  %s: %u", key_name, value);
             } else {
                 shell_print(sh, "  %s: <error reading>", key_name);
             }
         } else if (entry->value_size_bytes == sizeof(uint32_t)) {
             uint32_t value;
-            if (config_mgr_get_value(i, &value, sizeof(value))) {
+            if (ovyl_config_mgr_get_value(i, &value, sizeof(value))) {
                 shell_print(sh, "  %s: %u", key_name, value);
             } else {
                 shell_print(sh, "  %s: <error reading>", key_name);
@@ -234,14 +231,14 @@ static int cmd_config_reset_nvs(const struct shell *sh, size_t argc, char **argv
 
     shell_print(sh, "Resetting all NVS entries...");
 
-    prv_reset_nvs();
+    ovyl_config_mgr_reset_nvs();
 
     shell_print(sh, "NVS reset completed");
     return 0;
 }
 
 /**
- * @brief Shell command to reset all NVS entries
+ * @brief Shell command to reset resettable configuration entries
  */
 static int cmd_config_reset_configs(const struct shell *sh, size_t argc, char **argv) {
     ARG_UNUSED(argc);
@@ -249,7 +246,7 @@ static int cmd_config_reset_configs(const struct shell *sh, size_t argc, char **
 
     shell_print(sh, "Resetting resettable config entries...");
 
-    prv_reset_config();
+    ovyl_config_mgr_reset_configs();
 
     shell_print(sh, "Resettable config entries reset completed");
     return 0;

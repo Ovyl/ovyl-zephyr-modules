@@ -25,9 +25,7 @@
  * Variables
  *****************************************************************************/
 
-/**
- * @Brief Define default values for each of the keys
- */
+// Define default values for each configuration key
 #define CFG_DEFINE(key, type, default_val, rst) static type key##_def_val = default_val;
 #include <ovyl/configs.def>
 #undef CFG_DEFINE
@@ -48,10 +46,10 @@ static config_entry_t prv_config_entries[] = {
  *****************************************************************************/
 
 /*****************************************************************************
- * Functions
+ * Public Functions
  *****************************************************************************/
 
-config_entry_t *configs_get_entry(config_key_t key) {
+config_entry_t *ovyl_configs_get_entry(config_key_t key) {
     if (key >= CFG_NUM_KEYS) {
         return NULL;
     }
@@ -59,10 +57,10 @@ config_entry_t *configs_get_entry(config_key_t key) {
     return &prv_config_entries[key];
 }
 
-const char *config_key_as_str(config_key_t key) {
+const char *ovyl_config_key_as_str(config_key_t key) {
     static const char *unknown_key = "Unknown key";
 
-    config_entry_t *entry = configs_get_entry(key);
+    config_entry_t *entry = ovyl_configs_get_entry(key);
 
     if (entry == NULL) {
         return unknown_key;
