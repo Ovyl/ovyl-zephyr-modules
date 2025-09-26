@@ -62,3 +62,78 @@ Enable the module in your application's `prj.conf` and change any default kconfi
 CONFIG_OVYL_IWDOG=y
 
 ```
+
+## Usage
+
+### Basic Initialization
+
+Initialize the watchdog during system startup:
+
+```c
+#include <ovyl/iwdog.h>
+
+void main(void) {
+    int ret = ovyl_iwdog_init();
+    if (ret < 0) {
+        LOG_ERR("Failed to initialize iwdog: %d", ret);
+        return;
+    }
+
+    // Option 1: Use automatic feeding (recommended for most applications)
+    ovyl_iwdog_start_service_thread();
+
+    // Your application code...
+}
+```
+
+### Manual Feeding
+
+If you need manual control over watchdog feeding:
+
+```c
+#include <ovyl/iwdog.h>
+
+void main(void) {
+    // Initialize without auto-feed thread
+    int ret = ovyl_iwdog_init();
+    if (ret < 0) {
+        LOG_ERR("Failed to initialize iwdog: %d", ret);
+        return;
+    }
+
+    while (1) {
+        // Your application logic here...
+
+        // Feed the watchdog manually
+        ovyl_iwdog_feed();
+
+        // Sleep or continue with other tasks
+        k_sleep(K_MSEC(5000));  // Must be less than timeout
+    }
+}
+```
+
+### Handling Warning Events
+
+If you enabled Zbus publishing, you can subscribe to warning events:
+
+```c
+#include <ovyl/iwdog.h>
+#include <zephyr/zbus/zbus.h>
+
+// Subscriber callback for iwdog warnings
+static void iwdog_warning_handler(const struct zbus_channel *chan) {
+    const struct ovyl_iwdog_warning_event *event;
+
+    if (zbus_chan_read(chan, &event, K_NO_WAIT) == 0) {
+        LOG_WRN("Watchdog reset imminent! Time remaining: %d ms",
+                event->time_until_reset_ms);
+
+        // Take emergency actions here (save data, etc.)
+    }
+}
+
+// Subscribe to watchdog warning channel
+ZBUS_LISTENER_DEFINE(iwdog_warning_listener, iwdog_warning_handler);
+ZBUS_CHAN_ADD_OBS(ovyl_iwdog_warning_chan, iwdog_warning_listener, 0);
+```
