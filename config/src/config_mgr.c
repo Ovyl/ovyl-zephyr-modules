@@ -220,76 +220,74 @@ static int cmd_config_list(const struct shell *sh, size_t argc, char **argv) {
             } else {
                 shell_print(sh, "  %s: <error reading>", key_name);
             }
-            else {
-                /* For complex structures, just show the size */
-                shell_print(
-                    sh, "  %s: <complex type, %u bytes>", key_name, entry->value_size_bytes);
-            }
+        } else {
+            /* For complex structures, just show the size */
+            shell_print(sh, "  %s: <complex type, %u bytes>", key_name, entry->value_size_bytes);
         }
-
-        return 0;
     }
 
-    /**
-     * @brief Shell command to reset all NVS entries
-     */
-    static int cmd_config_reset_nvs(const struct shell *sh, size_t argc, char **argv) {
-        ARG_UNUSED(argc);
-        ARG_UNUSED(argv);
+    return 0;
+}
 
-        shell_print(sh, "Resetting all NVS entries...");
+/**
+ * @brief Shell command to reset all NVS entries
+ */
+static int cmd_config_reset_nvs(const struct shell *sh, size_t argc, char **argv) {
+    ARG_UNUSED(argc);
+    ARG_UNUSED(argv);
 
-        ovyl_config_mgr_reset_nvs();
+    shell_print(sh, "Resetting all NVS entries...");
 
-        shell_print(sh, "NVS reset completed");
-        return 0;
-    }
+    ovyl_config_mgr_reset_nvs();
 
-    /**
-     * @brief Shell command to reset resettable configuration entries
-     */
-    static int cmd_config_reset_configs(const struct shell *sh, size_t argc, char **argv) {
-        ARG_UNUSED(argc);
-        ARG_UNUSED(argv);
+    shell_print(sh, "NVS reset completed");
+    return 0;
+}
 
-        shell_print(sh, "Resetting resettable config entries...");
+/**
+ * @brief Shell command to reset resettable configuration entries
+ */
+static int cmd_config_reset_configs(const struct shell *sh, size_t argc, char **argv) {
+    ARG_UNUSED(argc);
+    ARG_UNUSED(argv);
 
-        ovyl_config_mgr_reset_configs();
+    shell_print(sh, "Resetting resettable config entries...");
 
-        shell_print(sh, "Resettable config entries reset completed");
-        return 0;
-    }
+    ovyl_config_mgr_reset_configs();
 
-    SHELL_STATIC_SUBCMD_SET_CREATE(
-        config_cmds,
-        SHELL_CMD_ARG(list,
-                      NULL,
-                      "List all configuration values.\n"
-                      "usage:\n"
-                      "$ ovyl_config list\n",
-                      cmd_config_list,
-                      1,
-                      0),
-        SHELL_CMD_ARG(reset_nvs,
-                      NULL,
-                      "Reset all NVS entries to defaults.\n"
-                      "This will delete ALL stored configuration values.\n"
-                      "usage:\n"
-                      "$ ovyl_config reset_nvs\n",
-                      cmd_config_reset_nvs,
-                      1,
-                      0),
-        SHELL_CMD_ARG(reset_config,
-                      NULL,
-                      "Reset resettable configuration entries to defaults.\n"
-                      "Only resets entries marked as resettable.\n"
-                      "usage:\n"
-                      "$ ovyl_config reset_config\n",
-                      cmd_config_reset_configs,
-                      1,
-                      0),
-        SHELL_SUBCMD_SET_END);
+    shell_print(sh, "Resettable config entries reset completed");
+    return 0;
+}
 
-    SHELL_CMD_REGISTER(ovyl_config, &config_cmds, "Configuration management commands", NULL);
+SHELL_STATIC_SUBCMD_SET_CREATE(config_cmds,
+                               SHELL_CMD_ARG(list,
+                                             NULL,
+                                             "List all configuration values.\n"
+                                             "usage:\n"
+                                             "$ ovyl_config list\n",
+                                             cmd_config_list,
+                                             1,
+                                             0),
+                               SHELL_CMD_ARG(reset_nvs,
+                                             NULL,
+                                             "Reset all NVS entries to defaults.\n"
+                                             "This will delete ALL stored configuration values.\n"
+                                             "usage:\n"
+                                             "$ ovyl_config reset_nvs\n",
+                                             cmd_config_reset_nvs,
+                                             1,
+                                             0),
+                               SHELL_CMD_ARG(reset_config,
+                                             NULL,
+                                             "Reset resettable configuration entries to defaults.\n"
+                                             "Only resets entries marked as resettable.\n"
+                                             "usage:\n"
+                                             "$ ovyl_config reset_config\n",
+                                             cmd_config_reset_configs,
+                                             1,
+                                             0),
+                               SHELL_SUBCMD_SET_END);
+
+SHELL_CMD_REGISTER(ovyl_config, &config_cmds, "Configuration management commands", NULL);
 
 #endif /* CONFIG_SHELL */
