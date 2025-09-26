@@ -146,4 +146,5 @@ The module provides shell commands for configuration management:
 
 2. **Shell Commands Not Auto-Generated**: Shell commands for getting/setting individual configuration values are not automatically generated. Each application must implement its own shell commands if this functionality is needed.
 
-3. **Type Differentiation**: The module cannot differentiate between types of the same size (e.g., `uint32_t` vs `float`, or `int32_t` vs `uint32_t`). While storage and retrieval work correctly for all types, the `list` shell command will display all values as unsigned integers based on their size. Complex types or types that need special formatting (like floats) will show as `<complex type, N bytes>` in the list output.
+3. **Type Differentiation**: The module cannot differentiate between types of the same size (e.g., `uint32_t` vs `float`, or `int32_t` vs `uint32_t`). While storage and retrieval work correctly for all types, the `list` shell command will display all values as unsigned integers based on their size. Complex types or types that need special formatting will show as `<complex type, N bytes>` in the list output.
+
