@@ -10,7 +10,7 @@ config OVYL_CONFIG
     select FLASH
     select FLASH_MAP
 
-config CONFIGS_APP_DEF_PATH
+config OVYL_CONFIG_APP_DEF_PATH
     string "Path to app configs.def"
     help
       Path to the application’s CFG(...) file.
@@ -18,8 +18,8 @@ config CONFIGS_APP_DEF_PATH
         CONFIGS_APP_DEF_PATH="\"${CMAKE_CURRENT_SOURCE_DIR}/app/app_configs.def\""
 
 # Pattern for per-module logging config
-module = OVYL_CONFIG
-module-str = OVYL_CONFIG
+module = OVYL_CFG_MGR
+module-str = OVYL_CFG_MGR
 source "subsys/logging/Kconfig.template.log_config"
 
 

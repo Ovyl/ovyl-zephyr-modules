@@ -19,7 +19,6 @@
 #include <zephyr/logging/log_ctrl.h>
 #include <zephyr/zbus/zbus.h>
 
-#include <ovyl/config_options.h>
 #include <ovyl/configs.h>
 
 /*****************************************************************************
@@ -120,24 +119,12 @@ bool config_mgr_set_value(config_key_t key, const void *src, size_t size) {
              entry->value_size_bytes,
              size);
 
-    /* Validate ambient light sample rate multiplier cannot be 0 */
-    if (key == CFG_AMBIENT_LIGHT_SAMPLE_RATE_MULTIPLIER) {
-        uint32_t value = *(const uint32_t *)src;
-        if (value == 0) {
-            LOG_ERR("Ambient light sample rate multiplier cannot be 0");
-            return false;
-        }
-    }
-
     ssize_t ret = nvs_write(&prv_inst.fs, key, src, size);
 
     if (ret < 0) {
         LOG_ERR("Failed to write config value for key %s: %d", entry->human_readable_key, ret);
         return false;
     }
-
-    /* Publish config change event */
-    prv_publish_config_change(key, src);
 
     return true;
 }
@@ -156,7 +143,24 @@ static void prv_reset_nvs(void) {
     }
 }
 
-static void prv_reset_config_values(void) {
+static void prv_reset_config(void) {
+    for (size_t i = 0; i < CFG_NUM_KEYS; i++) {
+        config_entry_t *entry = configs_get_entry(i);
+        if (entry == NULL) {
+            continue;
+        }
+
+        // Only reset entries that are marked as resettable
+        if (entry->resettable) {
+            int ret = nvs_delete(&prv_inst.fs, i);
+
+            if (ret != 0) {
+                LOG_ERR("Failed to reset %s to default: %d", config_key_as_str(i), ret);
+            } else {
+                LOG_DBG("Reset %s to default", config_key_as_str(i));
+            }
+        }
+    }
 }
 
 /*****************************************************************************
@@ -238,24 +242,43 @@ static int cmd_config_reset_configs(const struct shell *sh, size_t argc, char **
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
-    shell_print(sh, "Resetting config NVS entries...");
+    shell_print(sh, "Resetting resettable config entries...");
 
-    prv_reset_config_values();
+    prv_reset_config();
 
-    shell_print(sh, "NVS config reset completed");
+    shell_print(sh, "Resettable config entries reset completed");
     return 0;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
-    config_cmds,
-    SHELL_CMD(list, NULL, "List all configuration values", cmd_config_list),
-    SHELL_CMD(reset_nvs, NULL, "Reset all NVS entries", cmd_config_reset_nvs),
-    SHELL_CMD(reset_config, NULL, "Reset NVS config entries", cmd_config_reset_configs),
-    SHELL_SUBCMD_SET_END);
+SHELL_STATIC_SUBCMD_SET_CREATE(config_cmds,
+                               SHELL_CMD_ARG(list,
+                                             NULL,
+                                             "List all configuration values.\n"
+                                             "usage:\n"
+                                             "$ ovyl_config list\n",
+                                             cmd_config_list,
+                                             1,
+                                             0),
+                               SHELL_CMD_ARG(reset_nvs,
+                                             NULL,
+                                             "Reset all NVS entries to defaults.\n"
+                                             "This will delete ALL stored configuration values.\n"
+                                             "usage:\n"
+                                             "$ ovyl_config reset_nvs\n",
+                                             cmd_config_reset_nvs,
+                                             1,
+                                             0),
+                               SHELL_CMD_ARG(reset_config,
+                                             NULL,
+                                             "Reset resettable configuration entries to defaults.\n"
+                                             "Only resets entries marked as resettable.\n"
+                                             "usage:\n"
+                                             "$ ovyl_config reset_config\n",
+                                             cmd_config_reset_configs,
+                                             1,
+                                             0),
+                               SHELL_SUBCMD_SET_END);
 
-SHELL_CMD_REGISTER(config,
-                   &config_cmds,
-                   "Configuration management - type 'config help' for usage",
-                   cmd_config_help);
+SHELL_CMD_REGISTER(ovyl_config, &config_cmds, "Configuration management commands", NULL);
 
 #endif /* CONFIG_SHELL */
