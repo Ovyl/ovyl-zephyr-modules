@@ -24,7 +24,7 @@ extern "C" {
  * Structs, Unions, Enums, & Typedefs
  *****************************************************************************/
 
-#define CFG_DEFINE(key, type, default_val, resettable) key,
+#define CFG_DEFINE(key, type, default_val, rst) key,
 /**
  * @brief Definition of configuration keys
  */

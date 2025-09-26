@@ -17,7 +17,9 @@
 #include <zephyr/storage/flash_map.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/logging/log_ctrl.h>
-#include <zephyr/zbus/zbus.h>
+#include <zephyr/sys/util.h>
+#include <string.h>
+
 #include <zephyr/devicetree.h>
 
 #include <ovyl/configs.h>
@@ -28,10 +30,7 @@
 
 LOG_MODULE_REGISTER(ovyl_cfg_mgr, CONFIG_OVYL_CFG_MGR_LOG_LEVEL);
 
-#define NVS_NODE DT_CHOSEN(ovyl_config_partition)
-BUILD_ASSERT(DT_NODE_EXISTS(NVS_NODE), "Set ovyl,config-partition in your overlay");
-
-#define CFG_OPT_FLASH_AREA_ID FIXED_PARTITION_ID(NVS_NODE)
+#define CFG_OPT_FLASH_AREA nvs_storage
 
 /*****************************************************************************
  * Variables
@@ -54,9 +53,9 @@ static struct {
 
 void config_mgr_init(void) {
     const struct flash_area *fa;
-    int rc = flash_area_open(CFG_OPT_FLASH_AREA_ID, &fa);
+    int rc = flash_area_open(FLASH_AREA_ID(CFG_OPT_FLASH_AREA), &fa);
     if (rc < 0) {
-        LOG_ERR("Failed to open NVS flash area");
+        LOG_ERR("Failed to open NVS flash area: %s", STRINGIFY(CFG_OPT_FLASH_AREA));
         return;
     }
 

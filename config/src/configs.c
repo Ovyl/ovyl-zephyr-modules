@@ -11,6 +11,10 @@
 
 #include <ovyl/configs.h>
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <zephyr/sys/util.h>
+
 #include <zephyr/logging/log.h>
 
 /*****************************************************************************
@@ -24,15 +28,15 @@
 /**
  * @Brief Define default values for each of the keys
  */
-#define CFG_DEFINE(key, type, default_val, resettable) static type key##_def_val = default_val;
+#define CFG_DEFINE(key, type, default_val, rst) static type key##_def_val = default_val;
 #include <ovyl/configs.def>
 #undef CFG_DEFINE
 
-#define CFG_DEFINE(key, type, default_val, resettable)                                             \
+#define CFG_DEFINE(key, type, default_val, rst)                                                    \
     [key] = {.value_size_bytes = sizeof(type),                                                     \
              .default_value = &key##_def_val,                                                      \
              .human_readable_key = #key,                                                           \
-             .resettable = resettable},
+             .resettable = (rst)},
 
 static config_entry_t prv_config_entries[] = {
 #include <ovyl/configs.def>
