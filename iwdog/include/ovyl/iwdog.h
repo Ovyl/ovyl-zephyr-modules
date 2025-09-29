@@ -42,7 +42,7 @@ struct ovyl_iwdog_warning_event {
 };
 
 #ifdef CONFIG_OVYL_IWDOG_ZBUS_PUBLISH
-/* Zbus channel for OVYL iwdog reset imminent warnings */
+/* Zbus channel for Ovyl iwdog reset imminent warnings */
 ZBUS_CHAN_DECLARE(ovyl_iwdog_warning_chan);
 #endif
 

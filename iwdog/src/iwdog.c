@@ -29,7 +29,7 @@
 LOG_MODULE_REGISTER(ovyl_iwdog, CONFIG_OVYL_IWDOG_LOG_LEVEL);
 
 #ifdef CONFIG_OVYL_IWDOG_ZBUS_PUBLISH
-/* Define the Zbus channel for OVYL iwdog warnings */
+/* Define the Zbus channel for Ovyl iwdog warnings */
 ZBUS_CHAN_DEFINE(ovyl_iwdog_warning_chan,
                  struct ovyl_iwdog_warning_event,
                  NULL,
@@ -114,7 +114,7 @@ static void prv_warning_work_handler(struct k_work *work) {
 
     int ret = zbus_chan_pub(&ovyl_iwdog_warning_chan, &warning_evt, K_NO_WAIT);
     if (ret != 0) {
-        LOG_WRN("Failed to publish OVYL iwdog warning event: %d", ret);
+        LOG_WRN("Failed to publish Ovyl iwdog warning event: %d", ret);
     }
 }
 #endif
@@ -134,7 +134,7 @@ static void prv_panic_timer_callback(struct k_timer *timer) {
 
     if (atomic_cas(&prv_inst.did_panic, 0, 1)) {
         LOG_PANIC(); /* Switch to synchronous logging once */
-        printk("OVYL IWDOG final flush: reset imminent\n");
+        printk("Ovyl IWDOG final flush: reset imminent\n");
     }
 }
 #endif
@@ -160,7 +160,7 @@ static void prv_warning_timer_callback(struct k_timer *timer) {
         time_until_reset = 0;
     }
 
-    LOG_ERR("OVYL IWDOG WARNING: Timer will expire in approximately %d ms!", time_until_reset);
+    LOG_ERR("Ovyl IWDOG Warning: Timer will expire in approximately %d ms!", time_until_reset);
     LOG_ERR("Feed status: %s", prv_get_feed_enabled() ? "enabled" : "DISABLED");
 
 #ifdef CONFIG_OVYL_IWDOG_ZBUS_PUBLISH
@@ -184,7 +184,7 @@ static void prv_thread(void *p1, void *p2, void *p3) {
     ARG_UNUSED(p2);
     ARG_UNUSED(p3);
 
-    LOG_INF("OVYL Internal watchdog thread running, feeding every %d ms",
+    LOG_INF("Ovyl Internal watchdog thread running, feeding every %d ms",
             CONFIG_OVYL_WATCHDOG_FEED_INTERVAL_MS);
 
     while (1) {
@@ -205,7 +205,7 @@ int ovyl_iwdog_init(void) {
 
     /* Check if already initialized */
     if (prv_inst.is_initialized) {
-        LOG_WRN("OVYL Internal watchdog already initialized");
+        LOG_WRN("Ovyl Internal watchdog already initialized");
         return -EALREADY;
     }
 
@@ -233,7 +233,7 @@ int ovyl_iwdog_init(void) {
     /* Get watchdog device using standard alias */
     prv_inst.wdt_dev = DEVICE_DT_GET(DT_ALIAS(watchdog0));
     if (!device_is_ready(prv_inst.wdt_dev)) {
-        LOG_ERR("OVYL Internal watchdog device not ready");
+        LOG_ERR("Ovyl Internal watchdog device not ready");
         return -ENODEV;
     }
 
@@ -246,14 +246,14 @@ int ovyl_iwdog_init(void) {
     /* Install timeout */
     prv_inst.wdt_channel_id = wdt_install_timeout(prv_inst.wdt_dev, &wdt_config);
     if (prv_inst.wdt_channel_id < 0) {
-        LOG_ERR("Failed to install OVYL iwdog timeout: %d", prv_inst.wdt_channel_id);
+        LOG_ERR("Failed to install Ovyl iwdog timeout: %d", prv_inst.wdt_channel_id);
         return prv_inst.wdt_channel_id;
     }
 
     /* Start watchdog */
     ret = wdt_setup(prv_inst.wdt_dev, WDT_OPT_PAUSE_HALTED_BY_DBG);
     if (ret < 0) {
-        LOG_ERR("Failed to setup OVYL iwdog: %d", ret);
+        LOG_ERR("Failed to setup Ovyl iwdog: %d", ret);
         return ret;
     }
 
@@ -269,7 +269,7 @@ int ovyl_iwdog_init(void) {
     k_timer_start(&prv_inst.panic_timer, K_MSEC(panic_timeout), K_NO_WAIT);
 #endif
 
-    LOG_INF("OVYL Internal watchdog module v%s initialized with %d ms timeout "
+    LOG_INF("Ovyl Internal watchdog module v%s initialized with %d ms timeout "
             "(warning at %d ms).",
             OVYL_IWDOG_VERSION_STRING,
             CONFIG_OVYL_WATCHDOG_TIMEOUT_MS,
@@ -278,7 +278,7 @@ int ovyl_iwdog_init(void) {
 #ifdef CONFIG_OVYL_IWDOG_AUTO_START_THREAD
     ovyl_iwdog_start_service_thread();
 #else
-    LOG_INF("OVYL IWDOG thread auto-start disabled. Call ovyl_iwdog_start_service_thread() "
+    LOG_INF("Ovyl IWDOG thread auto-start disabled. Call ovyl_iwdog_start_service_thread() "
             "to begin feeding.");
 #endif
 
@@ -291,13 +291,13 @@ void ovyl_iwdog_feed(void) {
     int ret;
 
     if (prv_inst.wdt_dev == NULL || prv_inst.wdt_channel_id < 0) {
-        LOG_ERR("OVYL Internal watchdog not initialized");
+        LOG_ERR("Ovyl Internal watchdog not initialized");
         return;
     }
 
     ret = wdt_feed(prv_inst.wdt_dev, prv_inst.wdt_channel_id);
     if (ret < 0) {
-        LOG_ERR("Failed to feed OVYL iwdog: %d", ret);
+        LOG_ERR("Failed to feed Ovyl iwdog: %d", ret);
     } else {
         /* Update last feed time and restart timers */
         prv_inst.last_feed_time32 = k_uptime_get_32();
@@ -318,7 +318,7 @@ void ovyl_iwdog_feed(void) {
 void ovyl_iwdog_start_service_thread(void) {
     /* Check if thread already started */
     if (prv_inst.thread_started) {
-        LOG_WRN("OVYL Internal watchdog service thread already started");
+        LOG_WRN("Ovyl Internal watchdog service thread already started");
         return;
     }
 
@@ -335,7 +335,7 @@ void ovyl_iwdog_start_service_thread(void) {
 
     k_thread_name_set(&prv_inst.thread_data, "ovyl_iwdog");
     prv_inst.thread_started = true;
-    LOG_INF("OVYL Internal watchdog service thread started");
+    LOG_INF("Ovyl Internal watchdog service thread started");
 }
 
 /****************************************************************
@@ -347,7 +347,7 @@ void ovyl_iwdog_start_service_thread(void) {
 #include <zephyr/shell/shell.h>
 
 /**
- * @brief Shell command to enable OVYL iwdog feeding
+ * @brief Shell command to enable Ovyl iwdog feeding
  *
  * @param sh Shell instance
  * @param argc Argument count
@@ -358,11 +358,11 @@ static void prv_shell_ovyl_iwdog_enable(const struct shell *sh, size_t argc, cha
     ARG_UNUSED(argv);
 
     prv_set_feed_enabled(true);
-    shell_print(sh, "OVYL Internal watchdog feeding enabled");
+    shell_print(sh, "Ovyl Internal watchdog feeding enabled");
 }
 
 /**
- * @brief Shell command to disable OVYL iwdog feeding
+ * @brief Shell command to disable Ovyl iwdog feeding
  *
  * @param sh Shell instance
  * @param argc Argument count
@@ -374,12 +374,12 @@ static void prv_shell_ovyl_iwdog_disable(const struct shell *sh, size_t argc, ch
 
     prv_set_feed_enabled(false);
     shell_print(sh,
-                "OVYL Internal watchdog feeding disabled - system will reset in %d ms",
+                "Ovyl Internal watchdog feeding disabled - system will reset in %d ms",
                 CONFIG_OVYL_WATCHDOG_TIMEOUT_MS);
 }
 
 /**
- * @brief Shell command to show OVYL iwdog status
+ * @brief Shell command to show Ovyl iwdog status
  *
  * @param sh Shell instance
  * @param argc Argument count
@@ -389,7 +389,7 @@ static void prv_shell_ovyl_iwdog_status(const struct shell *sh, size_t argc, cha
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
-    shell_print(sh, "OVYL Internal watchdog status:");
+    shell_print(sh, "Ovyl Internal watchdog status:");
     shell_print(sh, "  Device: %s", prv_inst.wdt_dev ? "initialized" : "not initialized");
     shell_print(sh, "  Channel: %d", prv_inst.wdt_channel_id);
     shell_print(sh, "  Feeding: %s", prv_get_feed_enabled() ? "enabled" : "disabled");
@@ -399,16 +399,16 @@ static void prv_shell_ovyl_iwdog_status(const struct shell *sh, size_t argc, cha
 
 SHELL_STATIC_SUBCMD_SET_CREATE(
     ovyl_iwdog_cmds,
-    SHELL_CMD_ARG(enable, NULL, "Enable OVYL iwdog feeding", prv_shell_ovyl_iwdog_enable, 1, 0),
+    SHELL_CMD_ARG(enable, NULL, "Enable Ovyl iwdog feeding", prv_shell_ovyl_iwdog_enable, 1, 0),
     SHELL_CMD_ARG(disable,
                   NULL,
-                  "Disable OVYL iwdog feeding (for testing)",
+                  "Disable Ovyl iwdog feeding (for testing)",
                   prv_shell_ovyl_iwdog_disable,
                   1,
                   0),
-    SHELL_CMD_ARG(status, NULL, "Show OVYL iwdog status", prv_shell_ovyl_iwdog_status, 1, 0),
+    SHELL_CMD_ARG(status, NULL, "Show Ovyl iwdog status", prv_shell_ovyl_iwdog_status, 1, 0),
     SHELL_SUBCMD_SET_END);
 
-SHELL_CMD_REGISTER(ovyl_iwdog, &ovyl_iwdog_cmds, "OVYL Internal watchdog commands", NULL);
+SHELL_CMD_REGISTER(ovyl_iwdog, &ovyl_iwdog_cmds, "Ovyl Internal watchdog commands", NULL);
 
 #endif /* CONFIG_SHELL */
