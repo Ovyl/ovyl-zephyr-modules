@@ -24,6 +24,8 @@
 
 #include <ovyl/configs.h>
 
+#include <ovyl/config_version.h>
+
 /*****************************************************************************
  * Definitions
  *****************************************************************************/
@@ -68,6 +70,8 @@ void ovyl_config_mgr_init(void) {
     if (rc != 0) {
         LOG_ERR("NVS failed to mount: %d", rc);
     }
+
+    LOG_INF("Ovyl config module v%s initialized", OVYL_CONFIG_VERSION_STRING);
 }
 
 bool ovyl_config_mgr_get_value(config_key_t key, void *dst, size_t size) {
