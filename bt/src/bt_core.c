@@ -6,7 +6,7 @@
 
 /**
  * @file bt_core.c
- * @brief
+ * @brief Ovyl BT module core implementation for BLE peripheral functionality
  */
 
 #include <ovyl/bt_core.h>
