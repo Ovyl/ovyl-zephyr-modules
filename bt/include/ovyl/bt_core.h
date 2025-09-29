@@ -6,7 +6,7 @@
 
 /**
  * @file bt_core.h
- * @brief
+ * @brief Ovyl BT module public API for BLE peripheral functionality
  */
 
 #ifndef OVYL_BT_CORE_H
