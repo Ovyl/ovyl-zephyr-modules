@@ -26,7 +26,7 @@ config OVYL_WATCHDOG_TIMEOUT_MS
       Timeout in milliseconds for the watchdog. If not fed, system resets.
 
 config OVYL_IWDOG_THREAD_STACK_SIZE
-    int "OVYL IWDOG thread stack size"
+    int "Ovyl IWDOG thread stack size"
     default 1024
     range 256 8192
     depends on OVYL_IWDOG
@@ -34,7 +34,7 @@ config OVYL_IWDOG_THREAD_STACK_SIZE
       Stack size in bytes for the IWDOG service thread.
 
 config OVYL_IWDOG_THREAD_PRIORITY
-    int "OVYL IWDOG thread priority"
+    int "Ovyl IWDOG thread priority"
     default 0
     range -16 15
     depends on OVYL_IWDOG
@@ -52,7 +52,7 @@ config OVYL_IWDOG_WARNING_PCT
       Example: 75 means warn at 75% of the timeout (25% remaining).
 
 config OVYL_IWDOG_AUTO_START_THREAD
-    bool "Auto-start OVYL IWDOG feed thread"
+    bool "Auto-start Ovyl IWDOG feed thread"
     default y
     depends on OVYL_IWDOG
     help

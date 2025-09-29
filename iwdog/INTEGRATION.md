@@ -5,7 +5,7 @@
 
 ## Overview
 
-The OVYL Internal Watchdog (IWDOG) module provides a high-level abstraction for hardware watchdog timer management in Zephyr RTOS applications. This module includes configurable automatic feeding, warning notifications, and integration with Zephyr's logging and Zbus subsystems.
+The Ovyl Internal Watchdog (IWDOG) module provides a high-level abstraction for hardware watchdog timer management in Zephyr RTOS applications. This module includes configurable automatic feeding, warning notifications, and integration with Zephyr's logging and Zbus subsystems.
 
 ## Integration Steps
 
@@ -58,7 +58,7 @@ Create or update the board overlay file (e.g., `boards/your_board.overlay`):
 Enable the module in your application's `prj.conf` and change any default kconfig values if desired:
 
 ```conf
-# Enable OVYL IWDOG module
+# Enable Ovyl IWDOG module
 CONFIG_OVYL_IWDOG=y
 
 ```
