@@ -75,7 +75,7 @@ static const struct bt_le_adv_param adv_params = {
  */
 static struct {
     struct k_work advertising_worker;
-    struct ble_core_callbacks callbacks;
+    ovyl_bt_core_callbacks_t callbacks;
     struct bt_conn *conn;
     uint16_t conn_handle;
     volatile bool is_advertising;
@@ -94,7 +94,7 @@ static void prv_advertising_worker_task(struct k_work *work);
 /*****************************************************************************
  * Public Functions
  *****************************************************************************/
-int ble_core_init(void) {
+int ovyl_bt_core_init(void) {
     int err;
 
     prv_inst.conn = NULL;
@@ -116,15 +116,19 @@ int ble_core_init(void) {
     return 0;
 }
 
-void ble_core_start_advertising(void) {
+void ovyl_bt_core_start_advertising(void) {
     prv_advertising_start();
 }
 
-bool ble_core_is_currently_advertising(void) {
+void ovyl_bt_core_stop_advertising(void) {
+    prv_advertising_stop();
+}
+
+bool ovyl_bt_core_is_currently_advertising(void) {
     return prv_inst.is_advertising;
 }
 
-void ble_core_set_callbacks(const struct ble_core_callbacks *callbacks) {
+void ovyl_bt_core_set_callbacks(const ovyl_bt_core_callbacks_t *callbacks) {
     if (callbacks) {
         prv_inst.callbacks = *callbacks;
     } else {

@@ -63,10 +63,10 @@ ZBUS_CHAN_DECLARE(ovyl_bt_conn_chan);
 /**
  * @brief BT connection callbacks structure
  */
-struct ble_core_callbacks {
+typedef struct {
     void (*on_connected)(struct bt_conn *conn, uint8_t err);
     void (*on_disconnected)(struct bt_conn *conn, uint8_t reason);
-};
+} ovyl_bt_core_callbacks_t;
 
 /*****************************************************************************
  * Public Functions
@@ -76,31 +76,38 @@ struct ble_core_callbacks {
  *
  * @return 0 on success, negative errno on failure
  */
-int ble_core_init(void);
+int ovyl_bt_core_init(void);
 
 /**
  * @brief Start advertising if not already
  *
  * @return none
  */
-void ble_core_start_advertising(void);
+void ovyl_bt_core_start_advertising(void);
+
+/**
+ * @brief Stop advertising if currently advertising
+ *
+ * @return none
+ */
+void ovyl_bt_core_stop_advertising(void);
 
 /**
  * @brief Return true if system is currently advertising, false otherwise
  *
  * @return true if advertising, false otherwise
  */
-bool ble_core_is_currently_advertising(void);
+bool ovyl_bt_core_is_currently_advertising(void);
 
 /**
  * @brief Register callbacks for connection events
  *
- * Must be called before ble_core_init() to ensure callbacks are registered
+ * Must be called before ovyl_bt_core_init() to ensure callbacks are registered
  * before any connections can occur.
  *
  * @param callbacks Pointer to callbacks structure (can be NULL to clear)
  */
-void ble_core_set_callbacks(const struct ble_core_callbacks *callbacks);
+void ovyl_bt_core_set_callbacks(const ovyl_bt_core_callbacks_t *callbacks);
 
 #ifdef __cplusplus
 }
