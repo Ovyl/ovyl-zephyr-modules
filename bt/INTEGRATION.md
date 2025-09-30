@@ -72,6 +72,53 @@ CONFIG_OVYL_BT_ZBUS_PUBLISH=y
 CONFIG_SHELL=y
 ```
 
+## Bluetooth Shell and Logging over NUS
+
+The BT module supports running the Zephyr shell and logging over Bluetooth using the Nordic UART Service (NUS). This enables remote shell access and log viewing without a physical UART connection.
+
+### Enabling BT Shell and NUS
+
+Add the following to your `prj.conf`:
+
+```conf
+# Enable Bluetooth shell over NUS
+CONFIG_OVYL_BT_SHELL=y
+
+# Additional recommended buffer configurations for stable operation (not required)
+CONFIG_BT_L2CAP_TX_MTU=247
+CONFIG_BT_BUF_ACL_TX_SIZE=251
+CONFIG_BT_BUF_ACL_RX_SIZE=251
+CONFIG_SHELL_BACKEND_SERIAL_TX_RING_BUFFER_SIZE=512
+CONFIG_SHELL_BACKEND_SERIAL_RX_RING_BUFFER_SIZE=64
+CONFIG_BT_ATT_TX_MAX=2
+```
+
+**Note:** Depending on your application and the volume of data being transmitted over NUS, you may need to adjust buffer sizes, MTU values, or other Bluetooth stack parameters to prevent buffer overflow or dropped data.
+
+### Using the Python BLE Shell Script
+
+A Python script is provided to connect to the BT shell from your PC:
+
+```bash
+# Connect to a specific device by name
+./bt/scripts/ble_shell.py "My Device"
+
+# Or scan and select from available devices
+./bt/scripts/ble_shell.py
+```
+
+The script requires Python 3 with the `bleak` package:
+```bash
+pip install bleak
+```
+
+Once connected, you have full shell access. By default logging is set to `inf`
+
+This can be adjusted at runtime by sending `log enable <lvl>` where `lvl` is 
+`err`, `wrn`, `inf`, `dbg`.
+
+**Limitation:** The log level for BT transmission is controlled via shell command at runtime, not through Kconfig. This allows you to dynamically adjust the verbosity without reflashing firmware.
+
 ## Usage
 
 ### Initialization
