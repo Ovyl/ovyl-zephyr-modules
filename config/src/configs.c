@@ -27,7 +27,7 @@
 
 // Define default values for each configuration key
 #define CFG_DEFINE(key, type, default_val, rst) static type key##_def_val = default_val;
-#include <ovyl/configs.def>
+#include CONFIG_OVYL_CONFIG_APP_DEF_PATH
 #undef CFG_DEFINE
 
 #define CFG_DEFINE(key, type, default_val, rst)                                                    \
@@ -37,7 +37,7 @@
              .resettable = (rst)},
 
 static config_entry_t prv_config_entries[] = {
-#include <ovyl/configs.def>
+#include CONFIG_OVYL_CONFIG_APP_DEF_PATH
 #undef CFG_DEFINE
 };
 

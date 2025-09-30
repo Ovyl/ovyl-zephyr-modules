@@ -20,6 +20,14 @@ extern "C" {
  * Definitions
  *****************************************************************************/
 
+ #ifndef CONFIG_OVYL_CONFIG_APP_DEF_PATH
+#error "Set CONFIG_CONFIGS_APP_DEF_PATH in prj.conf to your app's .def file \
+(e.g. \"configs.def\"). Ensure the file is on the compiler include path: \
+- put it under app/include/, OR \
+- add its directory via zephyr_include_directories(...), OR \
+- use an absolute path in prj.conf."
+#endif
+
 /*****************************************************************************
  * Structs, Unions, Enums, & Typedefs
  *****************************************************************************/
@@ -29,7 +37,7 @@ extern "C" {
  * @brief Definition of configuration keys
  */
 typedef enum {
-#include <ovyl/configs.def>
+#include CONFIG_OVYL_CONFIG_APP_DEF_PATH
     CFG_NUM_KEYS
 } config_key_t;
 #undef CFG_DEFINE

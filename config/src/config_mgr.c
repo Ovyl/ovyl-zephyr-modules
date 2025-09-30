@@ -194,40 +194,30 @@ static int cmd_config_list(const struct shell *sh, size_t argc, char **argv) {
         }
 
         const char *key_name = ovyl_config_key_as_str(i);
-
-        if (entry->value_size_bytes == sizeof(uint8_t)) {
-            uint8_t value;
-            if (ovyl_config_mgr_get_value(i, &value, sizeof(value))) {
-                shell_print(sh, "  %s: %u", key_name, value);
-            } else {
-                shell_print(sh, "  %s: <error reading>", key_name);
-            }
-        } else if (entry->value_size_bytes == sizeof(uint16_t)) {
-            uint16_t value;
-            if (ovyl_config_mgr_get_value(i, &value, sizeof(value))) {
-                shell_print(sh, "  %s: %u", key_name, value);
-            } else {
-                shell_print(sh, "  %s: <error reading>", key_name);
-            }
-        } else if (entry->value_size_bytes == sizeof(uint32_t)) {
-            uint32_t value;
-            if (ovyl_config_mgr_get_value(i, &value, sizeof(value))) {
-                shell_print(sh, "  %s: %u", key_name, value);
-            } else {
-                shell_print(sh, "  %s: <error reading>", key_name);
-            }
-
-        } else if (entry->value_size_bytes == sizeof(uint64_t)) {
-            uint64_t value;
-            if (ovyl_config_mgr_get_value(i, &value, sizeof(value))) {
-                shell_print(sh, "  %s: %llu", key_name, value);
-            } else {
-                shell_print(sh, "  %s: <error reading>", key_name);
-            }
-        } else {
-            /* For complex structures, just show the size */
-            shell_print(sh, "  %s: <complex type, %u bytes>", key_name, entry->value_size_bytes);
+        size_t value_size = entry->value_size_bytes;
+        if (value_size == 0U) {
+            shell_print(sh, "  %s: <no data>", key_name);
+            continue;
         }
+
+        uint8_t value_buf[value_size];
+
+        if (!ovyl_config_mgr_get_value(i, value_buf, value_size)) {
+            shell_print(sh, "  %s: <error reading>", key_name);
+            continue;
+        }
+
+        shell_fprintf(sh, SHELL_NORMAL, "  %s:", key_name);
+        for (size_t byte = 0; byte < value_size; byte++) {
+            if ((byte % 16U) == 0U) {
+                shell_fprintf(sh, SHELL_NORMAL, "%s", byte == 0U ? "" : "\n           ");
+            }
+            shell_fprintf(sh, SHELL_NORMAL, " %02X", value_buf[byte]);
+        }
+        shell_fprintf(sh,
+                      SHELL_NORMAL,
+                      "\n           (%s endian order)\n",
+                      IS_ENABLED(CONFIG_LITTLE_ENDIAN) ? "little" : "big");
     }
 
     return 0;

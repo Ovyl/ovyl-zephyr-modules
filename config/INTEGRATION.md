@@ -134,7 +134,7 @@ ovyl_config_mgr_reset_configs();
 
 The module provides shell commands for configuration management:
 
-- `ovyl_config list` - List all configuration values
+- `ovyl_config list` - List all configuration values as a hex dump from the device memory.
 - `ovyl_config reset_nvs` - Reset all NVS entries to defaults
 - `ovyl_config reset_config` - Reset only resettable entries to defaults
 
@@ -146,5 +146,4 @@ The module provides shell commands for configuration management:
 
 2. **Shell Commands Not Auto-Generated**: Shell commands for getting/setting individual configuration values are not automatically generated. Each application must implement its own shell commands if this functionality is needed.
 
-3. **Type Differentiation**: The module cannot differentiate between types of the same size (e.g., `uint32_t` vs `float`, or `int32_t` vs `uint32_t`). While storage and retrieval work correctly for all types, the `list` shell command will display all values as unsigned integers based on their size. Complex types or types that need special formatting will show as `<complex type, N bytes>` in the list output.
 
