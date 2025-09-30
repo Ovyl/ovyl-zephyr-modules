@@ -1,0 +1,8 @@
+# Copyright (c) 2025 Ovyl
+# SPDX-License-Identifier: Apache-2.0
+
+menu "Ovyl Modules"
+
+rsource "../iwdog/Kconfig"
+
+endmenu
