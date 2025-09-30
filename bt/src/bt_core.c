@@ -25,6 +25,13 @@
 #include <zephyr/zbus/zbus.h>
 #endif
 
+#ifdef CONFIG_OVYL_BT_SHELL
+#include <bluetooth/services/nus.h>
+#include <shell/shell_bt_nus.h>
+#include <zephyr/shell/shell.h>
+#include <zephyr/shell/shell_backend.h>
+#endif
+
 /*****************************************************************************
  * Definitions
  *****************************************************************************/
@@ -118,6 +125,14 @@ int ovyl_bt_core_init(const char *adv_name) {
     prv_advertising_start();
 #endif
 
+#ifdef CONFIG_OVYL_BT_SHELL
+    err = shell_bt_nus_init();
+    if (err) {
+        LOG_ERR("Failed to initialize BT NUS shell (err: %d)", err);
+        return err;
+    }
+#endif
+
     const char *active_name = (adv_name != NULL) ? adv_name : CONFIG_BT_DEVICE_NAME;
     LOG_INF("Ovyl BT module v%s initialized, advertising name: %s",
             OVYL_BT_VERSION_STRING,
@@ -163,6 +178,11 @@ static void prv_device_connected(struct bt_conn *conn, uint8_t err) {
         LOG_INF("Connected to BLE device.");
 
         prv_inst.conn = bt_conn_ref(conn);
+
+#ifdef CONFIG_OVYL_BT_SHELL
+        shell_bt_nus_enable(conn);
+#endif
+
         int ret = bt_hci_get_conn_handle(prv_inst.conn, &prv_inst.conn_handle);
         if (ret) {
             LOG_ERR("Failed to get connection handle: %d", ret);
@@ -195,6 +215,10 @@ static void prv_device_connected(struct bt_conn *conn, uint8_t err) {
  */
 static void prv_device_disconnected(struct bt_conn *conn, uint8_t reason) {
     LOG_INF("Disconnected from device: %u", reason);
+
+#ifdef CONFIG_OVYL_BT_SHELL
+    shell_bt_nus_disable();
+#endif
 
     // Explicitly unreference the connection only if we have a reference
     if (prv_inst.conn) {
@@ -269,7 +293,7 @@ BT_CONN_CB_DEFINE(conn_callbacks) = {
 /*****************************************************************************
  * Shell Commands
  *****************************************************************************/
-#ifdef CONFIG_OVYL_BT_SHELL
+#ifdef CONFIG_OVYL_BT_SHELL_CMDS
 
 #include <zephyr/shell/shell.h>
 #include <stdlib.h>
@@ -362,4 +386,4 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 
 SHELL_CMD_REGISTER(ovyl_bt, &ovyl_bt_cmds, "Ovyl Bluetooth module commands", NULL);
 
-#endif /* CONFIG_OVYL_BT_SHELL */
+#endif /* CONFIG_OVYL_BT_SHELL_CMDS */
