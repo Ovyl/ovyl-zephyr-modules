@@ -54,15 +54,15 @@ CONFIG_BT_DEVICE_NAME="My Device"
 # Enable Ovyl BT module
 CONFIG_OVYL_BT=y
 
-# Advertising configuration (optional - defaults shown)
+# Advertising configuration (optional)
 CONFIG_OVYL_BT_ADV_FLAGS=0x06                    # BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR
 CONFIG_OVYL_BT_ADV_CONNECTABLE=y                 # Enable connectable advertising
 CONFIG_OVYL_BT_ADV_INTERVAL_MIN=1600             # 1 second (in 0.625ms units)
 CONFIG_OVYL_BT_ADV_INTERVAL_MAX=2400             # 1.5 seconds (in 0.625ms units)
 CONFIG_OVYL_BT_ADV_AUTO_START=y                  # Auto-start advertising on init
 CONFIG_OVYL_BT_ADV_RESTART_ON_DISCONNECT=y       # Auto-restart after disconnect
-CONFIG_OVYL_BT_ADV_INCLUDE_NAME=y                # Include device name in advertising
 CONFIG_OVYL_BT_ADV_ID=0                          # Bluetooth identity ID (0-15)
+CONFIG_BT_DEVICE_NAME="Device Name"
 
 # Enable Zbus event publishing (optional)
 CONFIG_ZBUS=y
@@ -76,14 +76,28 @@ CONFIG_SHELL=y
 
 ### Initialization
 
-Initialize the BT module during system startup:
+Initialize the BT module during system startup. The advertising name can either be set with a kconfig, or it can be set at runtime when passed as a string to the `ovyl_bt_core_init` funciton. If the kconfig is used, pass `NULL` to the init function:
 
 ```c
 #include <ovyl/bt_core.h>
 
 int main(void) {
     // Initialize the BT module
-    int err = ble_core_init();
+    int err = ovyl_bt_core_init(NULL);
+    if (err) {
+        LOG_ERR("Failed to initialize BT: %d", err);
+        return err;
+    }
+
+    // Your application code...
+    return 0;
+}
+
+#include <ovyl/bt_core.h>
+
+int main(void) {
+    // Initialize the BT module
+    int err = ovyl_bt_core_init("Dev BT Device");
     if (err) {
         LOG_ERR("Failed to initialize BT: %d", err);
         return err;
