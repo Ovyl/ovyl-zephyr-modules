@@ -48,11 +48,9 @@ ZBUS_CHAN_DEFINE(ovyl_bt_conn_chan,
 /**
  * @brief Array of data to advertise
  */
-static const struct bt_data prv_advertising_data[] = {
+static struct bt_data prv_advertising_data[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS, CONFIG_OVYL_BT_ADV_FLAGS),
-#ifdef CONFIG_OVYL_BT_ADV_INCLUDE_NAME
     BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME, strlen(CONFIG_BT_DEVICE_NAME)),
-#endif
 };
 
 /**
@@ -88,17 +86,25 @@ static struct {
  * @brief Start BLE advertising
  */
 static void prv_advertising_start(void);
-
+static void prv_advertising_stop(void);
 static void prv_advertising_worker_task(struct k_work *work);
 
 /*****************************************************************************
  * Public Functions
  *****************************************************************************/
-int ovyl_bt_core_init(void) {
+int ovyl_bt_core_init(const char *adv_name) {
     int err;
 
     prv_inst.conn = NULL;
     prv_inst.conn_handle = 0;
+
+    /* Update advertising data with custom name if provided */
+    if (adv_name != NULL) {
+        size_t name_len = strlen(adv_name);
+        prv_advertising_data[1].type = BT_DATA_NAME_COMPLETE;
+        prv_advertising_data[1].data_len = name_len;
+        prv_advertising_data[1].data = (const uint8_t *)adv_name;
+    }
 
     k_work_init(&prv_inst.advertising_worker, prv_advertising_worker_task);
 
@@ -112,7 +118,10 @@ int ovyl_bt_core_init(void) {
     prv_advertising_start();
 #endif
 
-    LOG_INF("Ovyl BT module v%s initialized", OVYL_BT_VERSION_STRING);
+    const char *active_name = (adv_name != NULL) ? adv_name : CONFIG_BT_DEVICE_NAME;
+    LOG_INF("Ovyl BT module v%s initialized, advertising name: %s",
+            OVYL_BT_VERSION_STRING,
+            active_name);
     return 0;
 }
 

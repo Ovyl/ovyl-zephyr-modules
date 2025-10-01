@@ -57,13 +57,6 @@ config OVYL_BT_ADV_RESTART_ON_DISCONNECT
       Automatically restart BLE advertising when a device disconnects.
       If disabled, advertising must be manually restarted after disconnection.
 
-config OVYL_BT_ADV_INCLUDE_NAME
-    bool "Include device name in advertising data"
-    default y
-    help
-      Include the device name (CONFIG_BT_DEVICE_NAME) in the advertising data.
-      Disabling this can reduce advertising packet size.
-
 config OVYL_BT_ADV_ID
     int "Bluetooth identity ID for advertising"
     default 0
