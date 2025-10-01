@@ -74,9 +74,10 @@ typedef struct {
 /**
  * @brief Initialize bluetooth core
  *
+ * @param adv_name Optional advertising name (NULL to use Kconfig default)
  * @return 0 on success, negative errno on failure
  */
-int ovyl_bt_core_init(void);
+int ovyl_bt_core_init(const char *adv_name);
 
 /**
  * @brief Start advertising if not already
