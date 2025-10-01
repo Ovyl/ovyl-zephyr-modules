@@ -12,7 +12,7 @@ NUS_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
 NUS_RX_CHAR_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"  # Write (PC -> device)
 NUS_TX_CHAR_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"  # Notify (device -> PC)
 
-async def run(target_name=None):
+async def run(target_name=None, log_level="inf"):
     # Scan for devices
     device = None
 
@@ -127,7 +127,8 @@ async def run(target_name=None):
                 await asyncio.sleep(2.0)  # Longer pause before enabling logs
 
                 # Enable debug logging with longer delay to prevent buffer overflow
-                await client.write_gatt_char(rx_char, b"log enable inf\r", response=with_response)
+                log_command = f"log enable {log_level}\r"
+                await client.write_gatt_char(rx_char, log_command.encode(), response=with_response)
                 await asyncio.sleep(2.0)  # Longer pause to let BLE buffers stabilize
 
                 # Save terminal settings and switch to raw mode
@@ -175,10 +176,11 @@ async def run(target_name=None):
 if __name__ == "__main__":
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="BLE Shell - Connect to Nordic UART Service devices")
-    parser.add_argument("device_name", nargs="?", help="Device name to auto-connect (optional)")
+    parser.add_argument("--device-name", help="Device name to auto-connect (optional)")
+    parser.add_argument("--log-level", default="inf", help="Log level to enable (default: inf)")
     args = parser.parse_args()
 
     try:
-        asyncio.run(run(target_name=args.device_name))
+        asyncio.run(run(target_name=args.device_name, log_level=args.log_level))
     except KeyboardInterrupt:
         print("\n👋 Exiting")
