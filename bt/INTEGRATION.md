@@ -43,14 +43,10 @@ west update ovyl-zephyr-modules
 
 ### 2. Kconfig Configuration
 
+## Bluetooth Configuration
 Enable the module and configure options in your application's `prj.conf`:
 
-```conf
-# Enable Bluetooth stack (required)
-CONFIG_BT=y
-CONFIG_BT_PERIPHERAL=y
-CONFIG_BT_DEVICE_NAME="My Device"
-
+```
 # Enable Ovyl BT module
 CONFIG_OVYL_BT=y
 
