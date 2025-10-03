@@ -12,6 +12,18 @@ NUS_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
 NUS_RX_CHAR_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"  # Write (PC -> device)
 NUS_TX_CHAR_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"  # Notify (device -> PC)
 
+# Timing and retry configuration
+SCAN_TIMEOUT_SECONDS = 5.0
+CONNECTION_TIMEOUT_SECONDS = 10.0
+MAX_CONNECTION_ATTEMPTS = 3
+INITIAL_PROMPT_DELAY_SECONDS = 2.0
+LOG_BUFFER_DELAY_SECONDS = 2.0
+INPUT_POLL_INTERVAL_SECONDS = 0.01
+RETRY_DELAY_SECONDS = 2.0
+
+# Control characters
+CTRL_C = 0x03
+
 async def run(target_name=None, log_level="inf"):
     # Scan for devices
     device = None
@@ -19,7 +31,7 @@ async def run(target_name=None, log_level="inf"):
     if target_name:
         # If target name provided, search for it
         print(f"🔍 Scanning for '{target_name}'...")
-        devices = await BleakScanner.discover(timeout=5.0)
+        devices = await BleakScanner.discover(timeout=SCAN_TIMEOUT_SECONDS)
 
         for d in devices:
             if d.name == target_name:
@@ -56,7 +68,7 @@ async def run(target_name=None, log_level="inf"):
     else:
         # List all devices and let user choose
         print("🔍 Scanning for BLE devices...")
-        devices = await BleakScanner.discover(timeout=5.0)
+        devices = await BleakScanner.discover(timeout=SCAN_TIMEOUT_SECONDS)
 
         # Filter devices with names
         named_devices = [d for d in devices if d.name]
@@ -86,10 +98,10 @@ async def run(target_name=None, log_level="inf"):
 
     print(f"✅ Found {device.name} ({device.address}), connecting…")
 
-    # Retry connection up to 3 times
-    for attempt in range(3):
+    # Retry connection up to MAX_CONNECTION_ATTEMPTS times
+    for attempt in range(MAX_CONNECTION_ATTEMPTS):
         try:
-            async with BleakClient(device, timeout=10.0) as client:
+            async with BleakClient(device, timeout=CONNECTION_TIMEOUT_SECONDS) as client:
                 print("🔗 Connected")
 
                 # Services/characteristics
@@ -124,12 +136,12 @@ async def run(target_name=None, log_level="inf"):
 
                 # Send initial CR to get shell prompt
                 await client.write_gatt_char(rx_char, b"\r", response=with_response)
-                await asyncio.sleep(2.0)  # Longer pause before enabling logs
+                await asyncio.sleep(INITIAL_PROMPT_DELAY_SECONDS)  # Longer pause before enabling logs
 
                 # Enable debug logging with longer delay to prevent buffer overflow
                 log_command = f"log enable {log_level}\r"
                 await client.write_gatt_char(rx_char, log_command.encode(), response=with_response)
-                await asyncio.sleep(2.0)  # Longer pause to let BLE buffers stabilize
+                await asyncio.sleep(LOG_BUFFER_DELAY_SECONDS)  # Longer pause to let BLE buffers stabilize
 
                 # Save terminal settings and switch to raw mode
                 old_settings = termios.tcgetattr(sys.stdin)
@@ -145,8 +157,8 @@ async def run(target_name=None, log_level="inf"):
                             # Read one byte at a time in raw mode
                             char = sys.stdin.read(1)
                             if char:
-                                # Check for Ctrl+C (0x03)
-                                if ord(char) == 0x03:
+                                # Check for Ctrl+C
+                                if ord(char) == CTRL_C:
                                     break
 
                                 # Send the character immediately to the device
@@ -156,7 +168,7 @@ async def run(target_name=None, log_level="inf"):
                             pass
 
                         # Small delay to prevent busy-waiting
-                        await asyncio.sleep(0.01)
+                        await asyncio.sleep(INPUT_POLL_INTERVAL_SECONDS)
 
                 finally:
                     # Restore terminal settings
@@ -166,9 +178,9 @@ async def run(target_name=None, log_level="inf"):
 
         except (asyncio.TimeoutError, Exception) as e:
             print(f"❌ Connection attempt {attempt + 1} failed: {e}")
-            if attempt < 2:  # Don't sleep after last attempt
-                print("⏳ Retrying in 2 seconds...")
-                await asyncio.sleep(2)
+            if attempt < MAX_CONNECTION_ATTEMPTS - 1:  # Don't sleep after last attempt
+                print(f"⏳ Retrying in {RETRY_DELAY_SECONDS} seconds...")
+                await asyncio.sleep(RETRY_DELAY_SECONDS)
             else:
                 print("💥 All connection attempts failed")
                 return
