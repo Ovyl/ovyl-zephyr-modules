@@ -67,19 +67,27 @@ config OVYL_BT_ADV_ID
 
 config OVYL_BT_ZBUS_PUBLISH
     bool "Publish BT connection events via Zbus"
-    default y
     depends on ZBUS
+    default y
     help
       Publish Bluetooth connection and disconnection events to Zbus channel.
       Allows other modules to subscribe to BT connection state changes.
 
-config OVYL_BT_SHELL
+config OVYL_BT_SHELL_CMDS
     bool "Enable shell commands for BT module"
-    default y
     depends on SHELL
+    default y
     help
       Enable shell commands for controlling the BT module (advertising,
       connection management, status). Commands are available under 'ovyl_bt'.
+
+config OVYL_BT_SHELL
+    bool "Enable shell over Bluetooth (NUS)"
+    default n
+    select SHELL_BT_NUS
+    select LOG_CMDS
+    help
+      Enable shell over Bluetooth which provides BLE shell transport via Nordic UART Service (NUS).
 
 endif # OVYL_BT
 
