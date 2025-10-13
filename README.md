@@ -9,6 +9,10 @@ Each module provides reusable functionality (drivers, subsystems, utilities) tha
 
 Each module has its own **Integration Guide** with detailed setup instructions.
 
+- [BT (Bluetooth Peripheral)](bt/INTEGRATION.md)  
+  Bluetooth LE peripheral stack with configurable advertising, optional Zbus events, and shell/NUS support.
+- [Config Storage](config/INTEGRATION.md)  
+  Persistent NVS-backed configuration manager with resettable/non-resettable entries and shell helpers.
 - [IWDOG (Internal Watchdog)](iwdog/INTEGRATION.md)  
   High-level abstraction for hardware watchdog timer management in Zephyr applications.
 
