@@ -79,7 +79,7 @@ void main(void) {
         return;
     }
 
-    // Option 1: Use automatic feeding (recommended for most applications)
+    // If using manual feeding
     ovyl_iwdog_start_service_thread();
 
     // Your application code...
