@@ -43,7 +43,7 @@ west update ovyl-zephyr-modules
 
 ### 2. Kconfig Configuration
 
-## Bluetooth Configuration
+#### Bluetooth Configuration
 Enable the module and configure options in your application's `prj.conf`:
 
 ```
@@ -68,7 +68,7 @@ CONFIG_OVYL_BT_ZBUS_PUBLISH=y
 CONFIG_SHELL=y
 ```
 
-## Bluetooth Shell and Logging over NUS
+#### Bluetooth Shell and Logging over NUS
 
 The BT module supports running the Zephyr shell and logging over Bluetooth using the Nordic UART Service (NUS). This enables remote shell access and log viewing without a physical UART connection.
 
@@ -119,37 +119,72 @@ This can be adjusted at runtime by sending `log enable <lvl>` where `lvl` is
 
 ### Initialization
 
-Initialize the BT module during system startup. The advertising name can either be set with a kconfig, or it can be set at runtime when passed as a string to the `ovyl_bt_core_init` funciton. If the kconfig is used, pass `NULL` to the init function:
+Initialize the BT module during system startup. The advertising name can either be set with a Kconfig option, or it can be provided at runtime when calling `ovyl_bt_core_init`. If the Kconfig default is used, pass `NULL` to the init function:
 
 ```c
 #include <ovyl/bt_core.h>
 
 int main(void) {
-    // Initialize the BT module
-    int err = ovyl_bt_core_init(NULL);
+    int err = ovyl_bt_core_init(NULL); /* use CONFIG_BT_DEVICE_NAME */
     if (err) {
         LOG_ERR("Failed to initialize BT: %d", err);
         return err;
     }
 
-    // Your application code...
     return 0;
 }
 
-#include <ovyl/bt_core.h>
-
+/* Or provide a runtime name */
 int main(void) {
-    // Initialize the BT module
-    int err = ovyl_bt_core_init("Dev BT Device");
+    int err = ovyl_bt_core_init("My Device");
     if (err) {
         LOG_ERR("Failed to initialize BT: %d", err);
         return err;
     }
 
-    // Your application code...
     return 0;
 }
 ```
+
+### Custom Advertising Payloads
+
+By default the module advertises the GAP flags and the configured device name. If your application needs to advertise additional data (e.g. custom 128-bit UUIDs) you can supply your own payloads before calling `ovyl_bt_core_init()`:
+
+```c
+static const uint8_t custom_uuid[] = {
+    0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x78, 0x9A,
+    0xA9, 0x87, 0x65, 0x43, 0x32, 0x1F, 0xED, 0xCB
+};
+
+static struct bt_data adv_payload[] = {
+    BT_DATA_BYTES(BT_DATA_FLAGS, CONFIG_OVYL_BT_ADV_FLAGS),
+    BT_DATA(BT_DATA_UUID128_ALL, custom_uuid, sizeof(custom_uuid)),
+};
+
+static struct bt_data scan_rsp_payload[] = {
+    BT_DATA(BT_DATA_NAME_COMPLETE, "MyDevice", 8),
+};
+
+void app_bt_init(void)
+{
+    /* Must be called before ovyl_bt_core_init() */
+    int err = ovyl_bt_core_set_adv_payload(adv_payload,
+                                           ARRAY_SIZE(adv_payload),
+                                           scan_rsp_payload,
+                                           ARRAY_SIZE(scan_rsp_payload));
+    if (err) {
+        LOG_ERR("Failed to set advertising payload: %d", err);
+        return;
+    }
+
+    err = ovyl_bt_core_init(NULL);
+    if (err) {
+        LOG_ERR("Failed to initialize BT core: %d", err);
+    }
+}
+```
+
+Passing `NULL` (or zero length) for either payload reverts to the module defaults. At runtime you can also call `ovyl_bt_core_reset_adv_payload()` to restore the original data.
 
 ### Using Callbacks (Alternative to Zbus)
 

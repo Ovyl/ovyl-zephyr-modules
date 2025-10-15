@@ -11,12 +11,15 @@
 
 #include <ovyl/bt_core.h>
 
+#include <errno.h>
+#include <stdbool.h>
 #include <string.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/bluetooth/hci_vs.h>
+#include <zephyr/sys/util.h>
 #include <zephyr/logging/log.h>
 
 #include <ovyl/bt_version.h>
@@ -53,12 +56,39 @@ ZBUS_CHAN_DEFINE(ovyl_bt_conn_chan,
  *****************************************************************************/
 
 /**
- * @brief Array of data to advertise
+ * @brief 
+ * 
  */
-static struct bt_data prv_advertising_data[] = {
+static struct bt_data prv_default_adv_data[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS, CONFIG_OVYL_BT_ADV_FLAGS),
-    BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME, strlen(CONFIG_BT_DEVICE_NAME)),
+    BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME, sizeof(CONFIG_BT_DEVICE_NAME) - 1),
 };
+
+static struct bt_data prv_default_scan_rsp[] = {
+    BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME, sizeof(CONFIG_BT_DEVICE_NAME) - 1),
+};
+
+#if defined(CONFIG_BT_DEVICE_NAME_MAX)
+#define OVYL_BT_NAME_BUF_SIZE CONFIG_BT_DEVICE_NAME_MAX
+#else
+#define OVYL_BT_NAME_BUF_SIZE 31U
+#endif
+
+static char prv_adv_name_buf[OVYL_BT_NAME_BUF_SIZE + 1];
+
+static const struct bt_data *prv_adv_data = prv_default_adv_data;
+static size_t prv_adv_data_len = ARRAY_SIZE(prv_default_adv_data);
+
+static const struct bt_data *prv_scan_rsp = prv_default_scan_rsp;
+static size_t prv_scan_rsp_len = ARRAY_SIZE(prv_default_scan_rsp);
+
+#define OVYL_BT_MAX_ADV_ITEMS 6
+
+static struct bt_data prv_user_adv_data[OVYL_BT_MAX_ADV_ITEMS];
+static uint8_t prv_user_adv_storage[BT_GAP_ADV_MAX_ADV_DATA_LEN];
+
+static struct bt_data prv_user_scan_data[OVYL_BT_MAX_ADV_ITEMS];
+static uint8_t prv_user_scan_storage[BT_GAP_ADV_MAX_ADV_DATA_LEN];
 
 /**
  * @brief Advertising parameters
@@ -96,6 +126,51 @@ static void prv_advertising_start(void);
 static void prv_advertising_stop(void);
 static void prv_advertising_worker_task(struct k_work *work);
 
+static int prv_copy_payload(const struct bt_data *src,
+                            size_t len,
+                            struct bt_data *dst,
+                            size_t dst_cap,
+                            uint8_t *storage,
+                            size_t storage_cap)
+{
+    size_t offset = 0U;
+
+    if (len > dst_cap) {
+        return -EINVAL;
+    }
+
+    for (size_t i = 0U; i < len; i++) {
+        size_t entry_len = src[i].data_len;
+
+        if ((entry_len > 0U) && (src[i].data == NULL)) {
+            return -EINVAL;
+        }
+
+        if ((offset + entry_len) > storage_cap) {
+            return -EINVAL;
+        }
+
+        dst[i].type = src[i].type;
+        dst[i].data_len = src[i].data_len;
+
+        if ((entry_len > 0U) && (src[i].data != NULL)) {
+            memcpy(storage + offset, src[i].data, entry_len);
+            dst[i].data = storage + offset;
+        } else {
+            dst[i].data = NULL;
+        }
+
+        offset += entry_len;
+    }
+
+    /* Clear any unused slots */
+    if (len < dst_cap) {
+        memset(&dst[len], 0, (dst_cap - len) * sizeof(*dst));
+    }
+
+    return 0;
+}
+
 /*****************************************************************************
  * Public Functions
  *****************************************************************************/
@@ -105,12 +180,20 @@ int ovyl_bt_core_init(const char *adv_name) {
     prv_inst.conn = NULL;
     prv_inst.conn_handle = 0;
 
-    /* Update advertising data with custom name if provided */
-    if (adv_name != NULL) {
+    bool using_default_scan = (prv_scan_rsp == prv_default_scan_rsp);
+
+    /* Update scan response data with custom name if provided */
+    if ((adv_name != NULL) && using_default_scan) {
         size_t name_len = strlen(adv_name);
-        prv_advertising_data[1].type = BT_DATA_NAME_COMPLETE;
-        prv_advertising_data[1].data_len = name_len;
-        prv_advertising_data[1].data = (const uint8_t *)adv_name;
+        name_len = MIN(name_len, sizeof(prv_adv_name_buf) - 1U);
+        memcpy(prv_adv_name_buf, adv_name, name_len);
+        prv_adv_name_buf[name_len] = '\0';
+
+        if ((prv_scan_rsp_len > 0U) && (prv_scan_rsp[0].type == BT_DATA_NAME_COMPLETE)) {
+            struct bt_data *mutable = (struct bt_data *)prv_scan_rsp;
+            mutable[0].data_len = name_len;
+            mutable[0].data = (const uint8_t *)prv_adv_name_buf;
+        }
     }
 
     k_work_init(&prv_inst.advertising_worker, prv_advertising_worker_task);
@@ -133,7 +216,14 @@ int ovyl_bt_core_init(const char *adv_name) {
     }
 #endif
 
-    const char *active_name = (adv_name != NULL) ? adv_name : CONFIG_BT_DEVICE_NAME;
+    const char *active_name = adv_name;
+    if (active_name == NULL) {
+        if ((prv_scan_rsp_len > 0U) && (prv_scan_rsp[0].type == BT_DATA_NAME_COMPLETE)) {
+            active_name = (const char *)prv_scan_rsp[0].data;
+        } else {
+            active_name = CONFIG_BT_DEVICE_NAME;
+        }
+    }
     LOG_INF("Ovyl BT module v%s initialized, advertising name: %s",
             OVYL_BT_VERSION_STRING,
             active_name);
@@ -158,6 +248,81 @@ void ovyl_bt_core_set_callbacks(const ovyl_bt_core_callbacks_t *callbacks) {
     } else {
         memset(&prv_inst.callbacks, 0, sizeof(prv_inst.callbacks));
     }
+}
+
+int ovyl_bt_core_set_adv_payload(const struct bt_data *adv_data,
+                                 size_t adv_len,
+                                 const struct bt_data *scan_rsp,
+                                 size_t scan_len)
+{
+    if ((adv_len > 0U) && (adv_data == NULL)) {
+        return -EINVAL;
+    }
+    if ((scan_len > 0U) && (scan_rsp == NULL)) {
+        return -EINVAL;
+    }
+
+    if (prv_inst.is_advertising) {
+        int err = bt_le_adv_stop();
+        if (err) {
+            return err;
+        }
+        prv_inst.is_advertising = false;
+    }
+
+    if (adv_len > 0U) {
+        int err = prv_copy_payload(adv_data,
+                                   adv_len,
+                                   prv_user_adv_data,
+                                   ARRAY_SIZE(prv_user_adv_data),
+                                   prv_user_adv_storage,
+                                   sizeof(prv_user_adv_storage));
+        if (err) {
+            return err;
+        }
+        prv_adv_data = prv_user_adv_data;
+        prv_adv_data_len = adv_len;
+    } else {
+        prv_adv_data = prv_default_adv_data;
+        prv_adv_data_len = ARRAY_SIZE(prv_default_adv_data);
+    }
+
+    if (scan_len > 0U) {
+        int err = prv_copy_payload(scan_rsp,
+                                   scan_len,
+                                   prv_user_scan_data,
+                                   ARRAY_SIZE(prv_user_scan_data),
+                                   prv_user_scan_storage,
+                                   sizeof(prv_user_scan_storage));
+        if (err) {
+            return err;
+        }
+        prv_scan_rsp = prv_user_scan_data;
+        prv_scan_rsp_len = scan_len;
+    } else {
+        prv_scan_rsp = prv_default_scan_rsp;
+        prv_scan_rsp_len = ARRAY_SIZE(prv_default_scan_rsp);
+    }
+
+    return 0;
+}
+
+void ovyl_bt_core_reset_adv_payload(void)
+{
+    if (prv_inst.is_advertising) {
+        (void)bt_le_adv_stop();
+        prv_inst.is_advertising = false;
+    }
+
+    prv_adv_data = prv_default_adv_data;
+    prv_adv_data_len = ARRAY_SIZE(prv_default_adv_data);
+    prv_scan_rsp = prv_default_scan_rsp;
+    prv_scan_rsp_len = ARRAY_SIZE(prv_default_scan_rsp);
+
+    memset(prv_user_adv_data, 0, sizeof(prv_user_adv_data));
+    memset(prv_user_adv_storage, 0, sizeof(prv_user_adv_storage));
+    memset(prv_user_scan_data, 0, sizeof(prv_user_scan_data));
+    memset(prv_user_scan_storage, 0, sizeof(prv_user_scan_storage));
 }
 
 /*****************************************************************************
@@ -253,8 +418,11 @@ static void prv_device_disconnected(struct bt_conn *conn, uint8_t reason) {
  * @param work Pointer to worker instance
  */
 static void prv_advertising_worker_task(struct k_work *work) {
-    int err = bt_le_adv_start(
-        &adv_params, prv_advertising_data, ARRAY_SIZE(prv_advertising_data), NULL, 0);
+    int err = bt_le_adv_start(&adv_params,
+                              prv_adv_data,
+                              prv_adv_data_len,
+                              prv_scan_rsp,
+                              prv_scan_rsp_len);
 
     if (err) {
         LOG_ERR("Failed to start BLE advertising: %d", err);
