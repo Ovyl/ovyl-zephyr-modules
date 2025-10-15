@@ -12,8 +12,9 @@
 #ifndef OVYL_BT_CORE_H
 #define OVYL_BT_CORE_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
 
 #ifdef CONFIG_OVYL_BT_ZBUS_PUBLISH
@@ -109,6 +110,29 @@ bool ovyl_bt_core_is_currently_advertising(void);
  * @param callbacks Pointer to callbacks structure (can be NULL to clear)
  */
 void ovyl_bt_core_set_callbacks(const ovyl_bt_core_callbacks_t *callbacks);
+
+/**
+ * @brief Override advertising and scan response payloads.
+ *
+ * Call before @ref ovyl_bt_core_init to replace default data. Passing NULL
+ * pointers leaves the corresponding payload unchanged.
+ *
+ * @param adv_data    Pointer to array of bt_data elements for advertising.
+ * @param adv_len     Number of elements in @p adv_data.
+ * @param scan_rsp    Pointer to array of bt_data elements for scan response.
+ * @param scan_len    Number of elements in @p scan_rsp.
+ *
+ * @return 0 on success, -EINVAL if lengths exceed configured limits.
+ */
+int ovyl_bt_core_set_adv_payload(const struct bt_data *adv_data,
+                                 size_t adv_len,
+                                 const struct bt_data *scan_rsp,
+                                 size_t scan_len);
+
+/**
+ * @brief Reset advertising and scan response payloads to defaults.
+ */
+void ovyl_bt_core_reset_adv_payload(void);
 
 #ifdef __cplusplus
 }
