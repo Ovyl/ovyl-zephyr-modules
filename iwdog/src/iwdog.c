@@ -89,15 +89,6 @@ static bool prv_get_feed_enabled(void) {
     return atomic_get(&prv_inst.feed_enabled) != 0;
 }
 
-/**
- * @brief Thread-safe setter for feed_enabled
- *
- * @param enabled New feed enabled state
- */
-static void prv_set_feed_enabled(bool enabled) {
-    atomic_set(&prv_inst.feed_enabled, enabled ? 1 : 0);
-}
-
 #ifdef CONFIG_OVYL_IWDOG_ZBUS_PUBLISH
 /**
  * @brief Work handler for publishing iwdog warning to Zbus
@@ -345,6 +336,15 @@ void ovyl_iwdog_start_service_thread(void) {
 #ifdef CONFIG_SHELL
 
 #include <zephyr/shell/shell.h>
+
+/**
+ * @brief Thread-safe setter for feed_enabled
+ *
+ * @param enabled New feed enabled state
+ */
+static void prv_set_feed_enabled(bool enabled) {
+    atomic_set(&prv_inst.feed_enabled, enabled ? 1 : 0);
+}
 
 /**
  * @brief Shell command to enable Ovyl iwdog feeding
