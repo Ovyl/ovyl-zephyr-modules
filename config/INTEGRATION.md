@@ -70,12 +70,17 @@ Enable the module in your application's `prj.conf` and set the path to the confi
 CONFIG_OVYL_CONFIG=y
 
 # Set path to your application's config definitions
-CONFIG_OVYL_CONFIG_APP_DEF_PATH="my.def"
+CONFIG_OVYL_CONFIG_APP_DEF_PATH="config.def"
+
+# (Optional) Path to custom type definitions header
+CONFIG_OVYL_CONFIG_TYPES_DEF_PATH="app/app_config_types.h"
 ```
 
 This path needs to be visible to the build system. Make sure the path is included in the app CMakeLists.txt with
 
 `zephyr_include_directories`
+
+When providing custom configuration types, place them in the header identified by `CONFIG_OVYL_CONFIG_TYPES_DEF_PATH`. Add any required `#include` directives for those types inside that header.
 
 ## Usage
 
@@ -145,5 +150,4 @@ The module provides shell commands for configuration management:
 1. **Hardcoded Partition Name**: The NVS partition name `nvs_storage` is hardcoded in the module due to Zephyr's flash map macro requirements. This cannot be made configurable through Kconfig.
 
 2. **Shell Commands Not Auto-Generated**: Shell commands for getting/setting individual configuration values are not automatically generated. Each application must implement its own shell commands if this functionality is needed.
-
 

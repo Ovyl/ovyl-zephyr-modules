@@ -17,6 +17,13 @@ config OVYL_CONFIG_APP_DEF_PATH
       Example:
         CONFIGS_APP_DEF_PATH="\"${CMAKE_CURRENT_SOURCE_DIR}/app/app_configs.def\""
 
+config OVYL_CONFIG_TYPES_DEF_PATH
+    string "Path to app custom type header file"
+    help
+      Path to the applicationds custom type file.
+      Example:
+        OVYL_CONFIG_TYPES_DEF_PATH="\"${CMAKE_CURRENT_SOURCE_DIR}/app/app_config_types.h\""
+
 # Pattern for per-module logging config
 module = OVYL_CFG_MGR
 module-str = OVYL_CFG_MGR
