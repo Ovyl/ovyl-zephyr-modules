@@ -17,7 +17,7 @@
 
 #include <zephyr/logging/log.h>
 
-#ifdef CONFIG_OVYL_CONFIG_TYPES_DEF_PATH
+#ifdef CONFIG_OVYL_CONFIG_USE_CUSTOM_TYPES
 #include CONFIG_OVYL_CONFIG_TYPES_DEF_PATH
 #endif
 

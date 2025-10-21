@@ -63,24 +63,25 @@ nvs_storage:
 
 ### 4. Kconfig Configuration
 
-Enable the module in your application's `prj.conf` and set the path to the config define file:
+Enable the module in your application's `prj.conf` and point it to your configuration definition file:
 
 ```conf
 # Enable Ovyl Config module
 CONFIG_OVYL_CONFIG=y
 
 # Set path to your application's config definitions
-CONFIG_OVYL_CONFIG_APP_DEF_PATH="config.def"
-
-# (Optional) Path to custom type definitions header
-CONFIG_OVYL_CONFIG_TYPES_DEF_PATH="app/app_config_types.h"
+CONFIG_OVYL_CONFIG_APP_DEF_PATH="path/to/config.def"
 ```
 
-This path needs to be visible to the build system. Make sure the path is included in the app CMakeLists.txt with
 
-`zephyr_include_directories`
+If your configuration entries rely on custom structs or typedefs, also enable the custom types option and provide the header file that defines those types:
 
-When providing custom configuration types, place them in the header identified by `CONFIG_OVYL_CONFIG_TYPES_DEF_PATH`. Add any required `#include` directives for those types inside that header.
+```conf
+CONFIG_OVYL_CONFIG_USE_CUSTOM_TYPES=y
+CONFIG_OVYL_CONFIG_TYPES_DEF_PATH="path/to/config_types.h"
+```
+
+Any files referenced by these options must be visible to the build system. Add the directories that contain them to your project CMake using `zephyr_include_directories`.
 
 ## Usage
 
