@@ -15,6 +15,8 @@ Each module has its own **Integration Guide** with detailed setup instructions.
   Persistent NVS-backed configuration manager with resettable/non-resettable entries and shell helpers.
 - [IWDOG (Internal Watchdog)](iwdog/INTEGRATION.md)  
   High-level abstraction for hardware watchdog timer management in Zephyr applications.
+- [Logging](logging/INTEGRATION.md)  
+  Flash-backed logging backend using an FCB ring to capture and retrieve device logs.
 
 > More modules will be added over time. See each module folder for details.
 

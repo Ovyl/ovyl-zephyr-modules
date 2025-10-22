@@ -6,5 +6,6 @@ menu "Ovyl Modules"
 rsource "../bt/Kconfig"
 rsource "../config/Kconfig"
 rsource "../iwdog/Kconfig"
+rsource "../logging/Kconfig"
 
 endmenu
