@@ -18,3 +18,8 @@ endif()
 if(CONFIG_OVYL_BT)
   add_subdirectory(bt)
 endif()
+
+# BT module
+if(CONFIG_OVYL_LOG_STORAGE)
+  add_subdirectory(logging)
+endif()
